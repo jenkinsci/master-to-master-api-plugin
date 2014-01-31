@@ -4,6 +4,8 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import jenkins.model.Jenkins;
 
+import java.security.PublicKey;
+
 /**
  * Represents a set of existing connections into {@link Master}.
  *
@@ -18,15 +20,27 @@ import jenkins.model.Jenkins;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class InterMasterConnection implements Iterable<Master>, ExtensionPoint {
+public abstract class InterMasterConnection<T extends Master> implements Iterable<T>, ExtensionPoint {
     /**
-     * Obtains other connected masters.
+     * Obtains a connected master by its public key.
      *
-     * @param instanceId
-     *      Jenkins instance ID. See {@link Master#getInstanceId()}
+     * @param publicKey
+     *      Looks up {@link Master} by its {@link Master#getPublicKeyString()}
      * @return null if the master isn't connected.
      */
-    public abstract Master get(String instanceId);
+    public T get(String publicKey) {
+        for (T m : this)
+            if (m.getPublicKeyString().equals(publicKey))
+                return m;
+        return null;
+    }
+
+    public T get(PublicKey key) {
+        for (T m : this)
+            if (m.getPublicKey().equals(key))
+                return m;
+        return null;
+    }
 
     /**
      * Returns all the {@link InterMasterConnection} implementations.

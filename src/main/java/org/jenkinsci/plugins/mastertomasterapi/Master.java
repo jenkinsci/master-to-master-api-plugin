@@ -1,11 +1,13 @@
 package org.jenkinsci.plugins.mastertomasterapi;
 
 import hudson.model.ModelObject;
+import hudson.remoting.Base64;
 import hudson.remoting.Channel;
-import jenkins.model.Jenkins;
+import org.jenkinsci.main.modules.instance_identity.InstanceIdentity;
 
 import javax.annotation.CheckForNull;
 import java.net.URL;
+import java.security.PublicKey;
 
 /**
  * Represents a connection to another master.
@@ -14,9 +16,20 @@ import java.net.URL;
  */
 public abstract class Master implements ModelObject {
     /**
-     * The same value as {@link Jenkins#getLegacyInstanceId()}
+     * Base64 encoded value of the public key of Jenkins instance.
+     * See {@link InstanceIdentity#getPublic()} as in
+     * {@code Base64.encode(InstanceIdentity.get().getPublic().getEncoded())}
      */
-    public abstract String getInstanceId();
+    public String getPublicKeyString() {
+        return Base64.encode(getPublicKey().getEncoded());
+    }
+
+    /**
+     * Base64 encoded value of the public key of Jenkins instance.
+     * See {@link InstanceIdentity#getPublic()} as in
+     * {@code Base64.encode(InstanceIdentity.get().getPublic().getEncoded())}
+     */
+    public abstract PublicKey getPublicKey();
 
     /**
      * If the communication to this master supports a {@link Channel} object, return it.
