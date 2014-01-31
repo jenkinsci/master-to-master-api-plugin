@@ -1,7 +1,10 @@
 package org.jenkinsci.plugins.mastertomasterapi.simple;
 
+import hudson.Util;
 import hudson.remoting.Base64;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
@@ -36,6 +39,16 @@ public class RegisteredMaster {
 
     public String getPublicKeyString() {
         return Base64.encode(key.getEncoded());
+    }
+
+    public String getPublicKeyFingerprint() throws IOException {
+        String s = Util.getDigestOf(new ByteArrayInputStream(Base64.decode(publicKey)));
+        StringBuilder buf = new StringBuilder();
+        for (int i=0; i<s.length(); i+=2) {
+            if (buf.length()>0)        buf.append(':');
+            buf.append(s.charAt(i)).append(s.charAt(i+1));
+        }
+        return buf.toString();
     }
 
     public PublicKey getKey() {

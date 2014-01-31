@@ -1,11 +1,14 @@
 package org.jenkinsci.plugins.mastertomasterapi;
 
+import hudson.Util;
 import hudson.model.ModelObject;
 import hudson.remoting.Base64;
 import hudson.remoting.Channel;
 import org.jenkinsci.main.modules.instance_identity.InstanceIdentity;
 
 import javax.annotation.CheckForNull;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.security.PublicKey;
 
@@ -22,6 +25,16 @@ public abstract class Master implements ModelObject {
      */
     public String getPublicKeyString() {
         return Base64.encode(getPublicKey().getEncoded());
+    }
+
+    public String getPublicKeyFingerprint() throws IOException {
+        String s = Util.getDigestOf(new ByteArrayInputStream(getPublicKey().getEncoded()));
+        StringBuilder buf = new StringBuilder();
+        for (int i=0; i<s.length(); i+=2) {
+            if (buf.length()>0)        buf.append(':');
+            buf.append(s.charAt(i)).append(s.charAt(i+1));
+        }
+        return buf.toString();
     }
 
     /**

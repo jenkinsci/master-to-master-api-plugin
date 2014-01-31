@@ -8,7 +8,7 @@
       <dl>
         <j:forEach var="rm" items="${it.masters}">
           <dt>${rm.url}</dt>
-          <dd>${rm.publicKeyString.substring(0,80)}...</dd>
+          <dd>${%Fingerprint}: ${rm.publicKeyFingerprint}</dd>
         </j:forEach>
       </dl>
       <div>
@@ -31,7 +31,7 @@
       <dl>
         <j:forEach var="cm" items="${it.cons}">
           <dt>${cm.URL}</dt>
-          <dd>${cm.publicKeyString.substring(0,80)}...</dd>
+          <dd>${%Fingerprint}: ${cm.publicKeyFingerprint}</dd>
         </j:forEach>
       </dl>
     </l:main-panel>
