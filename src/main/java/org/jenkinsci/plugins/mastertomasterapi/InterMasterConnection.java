@@ -4,6 +4,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import jenkins.model.Jenkins;
 
+import javax.annotation.CheckForNull;
 import java.security.PublicKey;
 
 /**
@@ -16,7 +17,7 @@ import java.security.PublicKey;
  *
  * <p>
  * This abstraction by itself does not expose how to connect to other masters nor
- * how the topology looks like.
+ * what the topology looks like.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -28,6 +29,7 @@ public abstract class InterMasterConnection<T extends Master> implements Iterabl
      *      Looks up {@link Master} by its {@link Master#getPublicKeyString()}
      * @return null if the master isn't connected.
      */
+    @CheckForNull
     public T get(String publicKey) {
         for (T m : this)
             if (m.getPublicKeyString().equals(publicKey))
@@ -35,6 +37,7 @@ public abstract class InterMasterConnection<T extends Master> implements Iterabl
         return null;
     }
 
+    @CheckForNull
     public T get(PublicKey key) {
         for (T m : this)
             if (m.getPublicKey().equals(key))

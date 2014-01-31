@@ -34,9 +34,6 @@ public abstract class Master implements ModelObject {
     /**
      * If the communication to this master supports a {@link Channel} object, return it.
      * This method may create the channel on-demand.
-     *
-     * @throws UnsupportedOperationException
-     *      if the underlying communication mechanism or the trust level does not allow the use of {@link Channel}.
      */
     @CheckForNull
     public abstract Channel getChannel();
@@ -46,5 +43,6 @@ public abstract class Master implements ModelObject {
     /**
      * Queries other services available on this master that can be used to communicate.
      */
+    @CheckForNull
     public abstract <T> T getService(Class<T> type);
 }
