@@ -1,0 +1,30 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+  <l:layout title="${%Simple Inter-Master Communication}">
+    <l:main-panel>
+      <h1>${%Simple Inter-Master Communication}</h1>
+
+      <h3>${%Registered Masters}</h3>
+      <dl>
+        <j:forEach var="rm" items="${it.masters}">
+          <dt>${rm.url}</dt>
+          <dd>${rm.publicKeyString.substring(0,80)}...</dd>
+        </j:forEach>
+      </dl>
+      <form method="post" action="register">
+        URL: <input type="text" name="url"/> <f:submit value="${%Add}" />
+      </form>
+      <form method="post" action="connectAll">
+        <f:submit value="${%Connect All}" />
+      </form>
+
+      <h3>${%Connected Masters}</h3>
+      <dl>
+        <j:forEach var="cm" items="${it.cons}">
+          <dt>${cm.URL}</dt>
+          <dd>${cm.publicKeyString.substring(0,80)}...</dd>
+        </j:forEach>
+      </dl>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

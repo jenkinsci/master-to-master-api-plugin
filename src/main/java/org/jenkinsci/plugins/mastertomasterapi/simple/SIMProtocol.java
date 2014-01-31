@@ -22,6 +22,9 @@ import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.*;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -41,13 +44,13 @@ public class SIMProtocol extends AgentProtocol {
 
     @Override
     public void handle(Socket socket) throws IOException {
-        connect(socket);
+        connect(socket,false);
     }
 
-    public ConnectedMaster connect(Socket socket) throws IOException {
+    public ConnectedMaster connect(Socket socket, boolean isClient) throws IOException {
         try {
             Connection c = new Connection(socket);
-            byte[] secret = c.diffieHellman(true).generateSecret();
+            byte[] secret = c.diffieHellman(isClient).generateSecret();
             SecretKey sessionKey = new SecretKeySpec(Connection.fold(secret,128/8),"AES");
             c = c.encryptConnection(sessionKey,"AES/CFB8/NoPadding");
 
@@ -58,7 +61,7 @@ public class SIMProtocol extends AgentProtocol {
             PublicKey peer = c.verifyIdentity(secret);
 
             c.writeUTF(Jenkins.getInstance().getRootUrl());
-            URL rootUrl = new URL(c.readUTF());
+            final URL rootUrl = new URL(c.readUTF());
 
             RegisteredMaster m = mgmt.findConnectedMaster(rootUrl,peer);
             if (m==null) {
@@ -78,10 +81,12 @@ public class SIMProtocol extends AgentProtocol {
 
             final ConnectedMaster cm = new ConnectedMaster(peer,channel,rootUrl);
             cons.masters.add(cm);
+            LOGGER.log(INFO, "Connected to "+rootUrl);
 
             channel.addListener(new Listener() {
                 @Override
                 public void onClosed(Channel channel, IOException cause) {
+                    LOGGER.log(INFO, "Disonncected to "+rootUrl);
                     cons.masters.remove(cm);
                 }
             });
@@ -97,4 +102,5 @@ public class SIMProtocol extends AgentProtocol {
     }
 
 
+    private static final Logger LOGGER = Logger.getLogger(SIMProtocol.class.getName());
 }

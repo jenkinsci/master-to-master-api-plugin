@@ -2,15 +2,20 @@ package org.jenkinsci.plugins.mastertomasterapi.simple;
 
 import hudson.Extension;
 import hudson.XmlFile;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
 import hudson.model.ManagementLink;
 import hudson.util.HttpResponses;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 import java.util.List;
 import java.util.Vector;
@@ -28,13 +33,12 @@ public class SIMManagement extends ManagementLink {
     private final Vector<RegisteredMaster> masters = new Vector<RegisteredMaster>();
 
     @Inject
-    Jenkins jenkins;
+    transient Jenkins jenkins;
 
     @Inject
-    SIMConnectionSet cons;
+    public transient SIMConnectionSet cons;
 
     public SIMManagement() throws IOException {
-        load();
     }
 
     protected XmlFile getConfigFile() {
@@ -42,7 +46,9 @@ public class SIMManagement extends ManagementLink {
     }
 
     public void load() throws IOException {
-        getConfigFile().unmarshal(this);
+        XmlFile f = getConfigFile();
+        if (f.exists())
+            f.unmarshal(this);
     }
 
     public synchronized void save() throws IOException {
@@ -58,7 +64,7 @@ public class SIMManagement extends ManagementLink {
         synchronized (masters) {
             for (RegisteredMaster n : masters.toArray(new RegisteredMaster[masters.size()])) {
                 // both of them are supposed to be unique more or less, so remove duplicates.
-                if (n.getUrl().equals(m.getUrl())) {
+                if (n.getURL().equals(m.getURL())) {
                     masters.remove(n);
                 }
                 if (n.getKey().equals(m.getKey())) {
@@ -90,18 +96,29 @@ public class SIMManagement extends ManagementLink {
      */
     public RegisteredMaster findConnectedMaster(URL rootUrl, PublicKey peer) {
         for (RegisteredMaster cm : getMasters()) {
-            if (cm.getUrl().equals(rootUrl) && cm.getKey().equals(peer)) {
+            if (cm.getURL().equals(rootUrl) && cm.getKey().equals(peer)) {
                 return cm;
             }
         }
         return null;
     }
 
+    @RequirePOST
+    public HttpResponse doRegister(@QueryParameter String url) throws IOException, GeneralSecurityException {
+        jenkins.checkPermission(Jenkins.ADMINISTER);
+        URL jenkins = new URL(url);
+        add(new RegisteredMaster(jenkins,new SIMClient().getInstanceIdentity(jenkins)));
+        return HttpResponses.ok();
+    }
+
+    @RequirePOST
     public HttpResponse doConnectAll() {
+//        SIMConnectionSet cons = SIMConnectionSet.get();
+        jenkins.checkPermission(Jenkins.ADMINISTER);
         for (RegisteredMaster master : masters) {
             ConnectedMaster c = cons.get(master.getKey());
             if (c==null) {// try to connect
-                URL url = master.getUrl();
+                URL url = master.getURL();
                 LOGGER.fine("Trying to connect to " + url);
                 try {
                     new SIMClient().connect(url);
@@ -119,4 +136,9 @@ public class SIMManagement extends ManagementLink {
 
     private static final Logger LOGGER = Logger.getLogger(SIMManagement.class.getName());
 
+    @Initializer(after=InitMilestone.JOB_LOADED, fatal=false)
+    public static void init() throws IOException {
+        get().load();
+        get().doConnectAll();   // TODO: this is just to get us going
+    }
 }

@@ -30,8 +30,12 @@ public class RegisteredMaster {
         this.publicKey = Base64.encode(key.getEncoded());
     }
 
-    public URL getUrl() {
+    public URL getURL() {
         return url;
+    }
+
+    public String getPublicKeyString() {
+        return Base64.encode(key.getEncoded());
     }
 
     public PublicKey getKey() {
