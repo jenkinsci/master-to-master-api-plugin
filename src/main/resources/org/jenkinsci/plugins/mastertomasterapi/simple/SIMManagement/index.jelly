@@ -11,12 +11,21 @@
           <dd>${rm.publicKeyString.substring(0,80)}...</dd>
         </j:forEach>
       </dl>
-      <form method="post" action="register">
-        URL: <input type="text" name="url"/> <f:submit value="${%Add}" />
-      </form>
-      <form method="post" action="connectAll">
-        <f:submit value="${%Connect All}" />
-      </form>
+      <div>
+        <form method="post" action="register">
+          URL: <input type="text" name="url"/> <f:submit value="${%Add}" />
+        </form>
+      </div>
+      <div>
+        <form method="post" action="connectAll">
+          <f:submit value="${%Connect All}" />
+        </form>
+      </div>
+      <div>
+        <form method="post" action="sayHelloToAll">
+          <f:submit value="${%Say Hello to all connected Jenkins}" />
+        </form>
+      </div>
 
       <h3>${%Connected Masters}</h3>
       <dl>

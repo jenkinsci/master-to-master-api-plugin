@@ -5,8 +5,11 @@ import hudson.XmlFile;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.model.ManagementLink;
+import hudson.remoting.Callable;
 import hudson.util.HttpResponses;
 import jenkins.model.Jenkins;
+import org.jenkinsci.plugins.mastertomasterapi.InterMasterConnection;
+import org.jenkinsci.plugins.mastertomasterapi.Master;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -130,6 +133,17 @@ public class SIMManagement extends ManagementLink {
         return HttpResponses.ok();
     }
 
+    @RequirePOST
+    public HttpResponse doSayHelloToAll() throws InterruptedException, IOException {
+        final String me = Jenkins.getInstance().getRootUrl();
+        for (InterMasterConnection<?> imc : InterMasterConnection.all()) {
+            for (Master m : imc) {
+                m.getChannel().call(new HelloWorld(me));
+            }
+        }
+        return HttpResponses.ok();
+    }
+
     public static SIMManagement get() {
         return all().get(SIMManagement.class);
     }
@@ -140,5 +154,20 @@ public class SIMManagement extends ManagementLink {
     public static void init() throws IOException {
         get().load();
         get().doConnectAll();   // TODO: this is just to get us going
+    }
+
+    private static class HelloWorld implements Callable<Void, IOException> {
+        private final String me;
+
+        public HelloWorld(String me) {
+            this.me = me;
+        }
+
+        public Void call() throws IOException {
+            System.out.println("Hello world from "+ me);
+            return null;
+        }
+
+        private static final long serialVersionUID = 1L;
     }
 }
