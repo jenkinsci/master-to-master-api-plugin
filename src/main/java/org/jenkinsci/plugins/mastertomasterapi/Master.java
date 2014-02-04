@@ -27,6 +27,9 @@ public abstract class Master implements ModelObject {
         return Base64.encode(getPublicKey().getEncoded());
     }
 
+    /**
+     * RSA public key in the public key fingerprint format of "11:22:33:44:....:ee:ff"
+     */
     public String getPublicKeyFingerprint() throws IOException {
         String s = Util.getDigestOf(new ByteArrayInputStream(getPublicKey().getEncoded()));
         StringBuilder buf = new StringBuilder();
@@ -38,9 +41,7 @@ public abstract class Master implements ModelObject {
     }
 
     /**
-     * Base64 encoded value of the public key of Jenkins instance.
-     * See {@link InstanceIdentity#getPublic()} as in
-     * {@code Base64.encode(InstanceIdentity.get().getPublic().getEncoded())}
+     * Instance identity of this master as an RSA public key.
      */
     public abstract PublicKey getPublicKey();
 
