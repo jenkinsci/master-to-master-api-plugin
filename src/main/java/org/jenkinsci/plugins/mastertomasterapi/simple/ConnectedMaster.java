@@ -35,11 +35,6 @@ public class ConnectedMaster extends Master {
         return url;
     }
 
-    @Override
-    public <T> T getService(Class<T> type) {
-        return null;    // TODO
-    }
-
     public String getDisplayName() {
         return url.toExternalForm();
     }

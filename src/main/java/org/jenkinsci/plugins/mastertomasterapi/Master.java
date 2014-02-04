@@ -56,7 +56,23 @@ public abstract class Master implements ModelObject {
 
     /**
      * Queries other services available on this master that can be used to communicate.
+     *
+     * The returned object is a proxy to the remote service.
+     *
+     * @param <T>
+     *     Interface that represents the contract.
      */
     @CheckForNull
-    public abstract <T> T getService(Class<T> type);
+    public <T> T getService(Class<T> type) {
+        if (!type.isInterface())
+            throw new UnsupportedOperationException(type+" is not an interface");
+        /*
+            The default implementation is remoting based.
+            for an implementation that doesn't support remoting,
+            it'll need a different implementation
+         */
+        Channel ch = getChannel();
+        if (ch==null)   return null;
+        return type.cast(ch.getRemoteProperty(type.getName()));
+    }
 }
