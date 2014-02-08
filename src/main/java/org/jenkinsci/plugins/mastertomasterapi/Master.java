@@ -18,6 +18,7 @@ import java.security.PublicKey;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Master implements ModelObject {
+
     /**
      * Base64 encoded value of the public key of Jenkins instance.
      * See {@link InstanceIdentity#getPublic()} as in
@@ -63,16 +64,13 @@ public abstract class Master implements ModelObject {
      *     Interface that represents the contract.
      */
     @CheckForNull
-    public <T> T getService(Class<T> type) {
-        if (!type.isInterface())
-            throw new UnsupportedOperationException(type+" is not an interface");
-        /*
-            The default implementation is remoting based.
-            for an implementation that doesn't support remoting,
-            it'll need a different implementation
-         */
-        Channel ch = getChannel();
-        if (ch==null)   return null;
-        return type.cast(ch.getRemoteProperty(type.getName()));
+    public abstract <T> T getService(Class<T> type);
+
+    /**
+     * If a given channel connects to another master, returns the {@link Master} instance
+     * that represents it. Otherwise this method returns null.
+     */
+    public static Master from(Channel ch) {
+        return (Master)ch.getProperty(Master.class);
     }
 }
