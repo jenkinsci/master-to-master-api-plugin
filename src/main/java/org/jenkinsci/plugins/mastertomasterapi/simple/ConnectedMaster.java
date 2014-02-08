@@ -1,7 +1,7 @@
 package org.jenkinsci.plugins.mastertomasterapi.simple;
 
 import hudson.remoting.Channel;
-import org.jenkinsci.plugins.mastertomasterapi.AbstractChannelBsaedMasterImpl;
+import org.jenkinsci.plugins.mastertomasterapi.AbstractChannelBasedMasterImpl;
 
 import java.net.URL;
 import java.security.PublicKey;
@@ -9,7 +9,7 @@ import java.security.PublicKey;
 /**
  * @author Kohsuke Kawaguchi
  */
-public class ConnectedMaster extends AbstractChannelBsaedMasterImpl {
+public class ConnectedMaster extends AbstractChannelBasedMasterImpl {
     private final PublicKey key;
     private final Channel channel;
     private final URL url;

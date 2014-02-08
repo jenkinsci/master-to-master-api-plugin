@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutionException;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class AbstractChannelBsaedMasterImpl extends Master {
+public abstract class AbstractChannelBasedMasterImpl extends Master {
 
     private final LoadingCache<Class,Object> services = CacheBuilder.newBuilder().build(new CacheLoader<Class, Object>() {
         @Override
