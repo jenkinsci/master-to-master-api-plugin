@@ -4,6 +4,8 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.remoting.Channel;
 import jenkins.model.Jenkins;
+import org.jenkinsci.plugins.mastertomasterapi.proxy.LocalCall;
+import org.jenkinsci.plugins.mastertomasterapi.proxy.RPC;
 
 import javax.annotation.CheckForNull;
 
@@ -22,6 +24,12 @@ public abstract class InterMasterService implements ExtensionPoint {
      *
      * @param remote
      *      {@link Master} that the returned instance will serve.
+     *
+     * @return
+     *      If null, then other {@link InterMasterService}s in the list will get a chance to return an instance.
+     *      If the return value implements {@link RPC}, it receives RPC calls directly.
+     *      Otherwise {@linkplain LocalCall the default RPC wrapper} is used to perform a reasonable method selection
+     *      based on the caller arguments.
      */
     @CheckForNull
     public abstract <T> T getInstance(Class<T> interfaceType, Master remote);

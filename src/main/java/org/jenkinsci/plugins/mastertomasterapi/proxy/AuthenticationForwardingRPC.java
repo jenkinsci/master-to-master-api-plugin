@@ -17,6 +17,9 @@ import java.util.Set;
  * A pair of {@link RPC} filter objects that allows the caller and the receiver to pass the thread-local
  * {@link Authentication} object.
  *
+ * To use this, wrap the caller side of the {@link RPC} chain with {@link #sender(RPC)}, and the receiver
+ * side of the {@link RPC} chain with {@link #receiver(RPC)}
+ *
  * @author Kohsuke Kawaguchi
  * @see Jenkins#getAuthentication()
  */

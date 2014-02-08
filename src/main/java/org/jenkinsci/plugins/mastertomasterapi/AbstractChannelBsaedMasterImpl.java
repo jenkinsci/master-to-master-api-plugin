@@ -5,6 +5,10 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
+import org.jenkinsci.plugins.mastertomasterapi.proxy.AuthenticationForwardingRPC;
+import org.jenkinsci.plugins.mastertomasterapi.proxy.LocalCall;
+import org.jenkinsci.plugins.mastertomasterapi.proxy.RPC;
+import org.jenkinsci.plugins.mastertomasterapi.proxy.TypeSafeProxy;
 
 import javax.annotation.CheckForNull;
 import java.io.IOException;
@@ -49,25 +53,38 @@ public abstract class AbstractChannelBsaedMasterImpl extends Master {
          */
         Channel ch = getChannel();
         if (ch==null)   return null;
-        return type.cast(ch.call(new RemoteServiceTask(type)));
+        RPC rpc = ch.call(new RemoteServiceTask(type));
+        rpc = AuthenticationForwardingRPC.sender(rpc);
+        return type.cast(TypeSafeProxy.create(type,rpc));
     }
 
-    private static class RemoteServiceTask implements Callable<Object,IOException> {
+    private static class RemoteServiceTask implements Callable<RPC,IOException> {
         private final Class interfaceType;
 
         private RemoteServiceTask(Class interfaceType) {
             this.interfaceType = interfaceType;
         }
 
-        public Object call() throws IOException {
-            Master m = Master.from(Channel.current());
+        public RPC call() throws IOException {
+            Channel ch = Channel.current();
+            Master m = Master.from(ch);
             for (InterMasterService ims : InterMasterService.all()) {
                 Object o = ims.getInstance(interfaceType, m);
-                if (o!=null)
-                    // TODO: wrap this in the security transparent object
-                    return o;
+                if (o!=null) {
+                    RPC rpc = toRPC(o);
+                    rpc = AuthenticationForwardingRPC.receiver(rpc);
+                    rpc = ch.export(RPC.class, rpc);
+                    return rpc;
+                }
             }
             return null;
+        }
+
+        private RPC toRPC(Object o) {
+            if (o instanceof RPC)
+                return (RPC) o;
+            else
+                return new LocalCall(o);
         }
 
         private static final long serialVersionUID = 1L;
